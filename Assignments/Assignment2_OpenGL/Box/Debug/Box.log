@@ -1,0 +1,11 @@
+﻿  box.cpp
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment2_OpenGL\box.cpp(36,20): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment2_OpenGL\box.cpp(36,16): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment2_OpenGL\box.cpp(36,12): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment2_OpenGL\box.cpp(161,11): warning C4305: '-=': truncation from 'double' to 'float'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment2_OpenGL\box.cpp(165,11): warning C4305: '+=': truncation from 'double' to 'float'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment2_OpenGL\box.cpp(169,11): warning C4305: '-=': truncation from 'double' to 'float'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment2_OpenGL\box.cpp(173,11): warning C4305: '+=': truncation from 'double' to 'float'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment2_OpenGL\box.cpp(177,11): warning C4305: '-=': truncation from 'double' to 'float'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment2_OpenGL\box.cpp(181,11): warning C4305: '+=': truncation from 'double' to 'float'
+  Box.vcxproj -> C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment2_OpenGL\Debug\Box.exe

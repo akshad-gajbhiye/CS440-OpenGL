@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<!-- squareWeberized.html 
+     WebGL 2.0 version of square.cpp, adapted from squareShaderized.cpp.
+     
+	   Sumanta Guha -->
+<html>
+<head>
+<title>SquareWeberized</title>
+
+<style type="text/css">
+canvas { border: 1px solid black; } 
+</style>
+
+<!-- Vertex shader embedded in the program as a script with intentionally invalid
+HTML type so that the browser will not process it but treat it as a text element. -->
+<script type="vertexShader" id="vs"> 
+#version 300 es
+
+layout(location=0) in vec4 squareCoords;
+layout(location=1) in vec4 squareColors;
+
+uniform mat4 modelViewMat;
+uniform mat4 projMat;
+
+out vec4 colorsExport;
+
+void main() 
+{
+  gl_Position = projMat * modelViewMat * squareCoords;
+  colorsExport = squareColors;
+}
+</script>
+
+<!-- Fragment shader embedded in the program as a script with intentionally invalid
+HTML type so that the browser will not process it but treat it as a text element. -->
+<!-- GLSL ES requires a fragment shader to declare the precision for the GPU to use
+in calculating floats, as we do in the second line below. -->
+<script type="fragmentShader" id="fs">
+#version 300 es
+precision mediump float;
+
+in vec4 colorsExport;
+
+out vec4 colorsOut;
+
+void main() 
+{
+  colorsOut = colorsExport;
+}
+</script>
+
+<script type="text/javascript">
+'use strict'
+
+///////////// Class and functions to create and handle vertex data /////////////                                  
+// Vertex class with coordinate and color fields.
+class Vertex 
+{
+   constructor(coords, colors) 
+   {
+      this.coords = coords;
+      this.colors = colors;
+   }
+}
+
+// Function to flatten a vertex into a single array of numbers.
+function flattenVertex(v)
+{
+   let vArr = [];
+   for (let i = 0; i < 4; i++) vArr = vArr.concat(v.coords[i]);
+   for (let i = 0; i < 4; i++) vArr = vArr.concat(v.colors[i]);
+   return vArr;
+}
+
+// Function to flatten an array of vertices into a single Float32Array.
+function flattenArrayOfVertices(a)
+{
+    let aArr = [];
+    for (let i = 0; i < a.length; i++) aArr = aArr.concat(flattenVertex(a[i]));
+    let aArrFl32 = new Float32Array(aArr);
+    return aArrFl32;
+}
+////////////////////////////////////////////////////////////////////////////////
+
+// Globals
+// 4 x 4 identitiy matrix written in row-major order in a flat Float32Array.
+const IDENTITY_MATRIX4x4 = new Float32Array(
+[
+  1.0, 0.0, 0.0, 0.0, 
+  0.0, 1.0, 0.0, 0.0,
+  0.0, 0.0, 1.0, 0.0,
+  0.0, 0.0, 0.0, 1.0
+]);
+
+// Array of 4 square vertices each an object of class Vertex.
+const squareVertices = [new Vertex( [20.0, 20.0, 0.0, 1.0],  [0.0, 0.0, 0.0, 1.0] ), 
+                        new Vertex( [80.0, 20.0, 0.0, 1.0],  [0.0, 0.0, 0.0, 1.0] ), 
+                        new Vertex( [20.0, 80.0, 0.0, 1.0],  [0.0, 0.0, 0.0, 1.0] ),
+                        new Vertex( [80.0, 80.0, 0.0, 1.0],  [0.0, 0.0, 0.0, 1.0] )];
+
+// Javascript has no sizeof() operator so we define a mnemonic for float size in bytes.
+const SIZEOF_FLOAT32 = Float32Array.BYTES_PER_ELEMENT; 
+
+let canvas, // HTML canvas element
+  gl,       // WebGL 2.0 context
+  programObj,
+  vertexShaderObj,
+  fragmentShaderObj,
+  modelViewMat,
+  modelViewMatLoc,
+  projMat,
+  projMatLoc,
+  buffer,
+  vao;
+
+// Initialization routine.
+function setup() 
+{
+  gl.clearColor(1.0, 1.0, 1.0, 0.0);
+
+  // Create vertex shader object.
+  const vertexShader = document.getElementById("vs").text.trim(); // Read vertex shader.
+  vertexShaderObj = gl.createShader(gl.VERTEX_SHADER);
+  gl.shaderSource(vertexShaderObj, vertexShader);
+  gl.compileShader(vertexShaderObj);
+
+  // Create fragment shader object.
+  const fragmentShader = document.getElementById("fs").text.trim(); // Read fragment shader.
+  fragmentShaderObj = gl.createShader(gl.FRAGMENT_SHADER);
+  gl.shaderSource(fragmentShaderObj, fragmentShader);
+  gl.compileShader(fragmentShaderObj);
+
+  // Create shader program executable.
+  programObj = gl.createProgram();
+  gl.attachShader(programObj, vertexShaderObj);
+  gl.attachShader(programObj, fragmentShaderObj);
+  gl.linkProgram(programObj);
+  gl.useProgram(programObj);
+      
+  // Create VAO and VBO, associate data...
+  vao = gl.createVertexArray(); 
+  buffer = gl.createBuffer();
+  gl.bindVertexArray(vao);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  // Flatten the square's vertex data into a Float32Array and buffer.
+  gl.bufferData(gl.ARRAY_BUFFER, flattenArrayOfVertices(squareVertices), gl.STATIC_DRAW);
+
+  // ...and link to vertex shader locations.
+  gl.vertexAttribPointer(0, 4, gl.FLOAT, false, SIZEOF_FLOAT32 * 8, 0);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(1, 4, gl.FLOAT, false, SIZEOF_FLOAT32 * 8, SIZEOF_FLOAT32 * 4);
+  gl.enableVertexAttribArray(1);
+
+  // Obtain modelview matrix uniform location and set value.
+  modelViewMat = IDENTITY_MATRIX4x4;
+  modelViewMatLoc = gl.getUniformLocation(programObj, "modelViewMat");
+  gl.uniformMatrix4fv(modelViewMatLoc, false, modelViewMat);
+
+  // Obtain projection matrix uniform location and set value.
+  projMat = new Float32Array(
+  [
+    0.02, 0.0,  0.0, -1.0,
+    0.0,  0.02, 0.0, -1.0,
+    0.0,  0.0, -1.0,  0.0,
+    0.0,  0.0,  0.0,  1.0
+  ]);
+  projMatLoc = gl.getUniformLocation(programObj, "projMat");
+  gl.uniformMatrix4fv(projMatLoc, true, projMat);
+}
+
+// Drawing routine.
+function drawScene()
+{
+  // Clear the canvas and set the whole as viewport.
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+  // Draw.
+  gl.bindVertexArray(vao);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+}
+
+// Application entry routine.
+function init()
+{
+  // Obtain a WebGL 2.0 context for the HTML canvas.  
+  canvas = document.getElementById('WebGLcanvas');    
+  gl = canvas.getContext('webgl2'); 
+  
+  setup();
+  drawScene();
+}
+
+window.onload = init;
+</script>
+</head>
+  
+<body>
+<canvas id="WebGLcanvas" width="500" height="500"></canvas>
+</body>
+</html>

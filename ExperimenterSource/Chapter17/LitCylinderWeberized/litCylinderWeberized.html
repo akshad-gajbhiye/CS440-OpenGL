@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<!-- litCylinderWeberized.html 
+     WebGL 2.0 version of litCylinder.cpp, adapted from litCylinderShaderized.cpp.
+
+     Open the project in a server environment, e.g., Visual Studio Code with Live Server extension.
+     
+     Interaction:
+     Press x, X, y, Y, z, Z to turn the cylinder.
+
+	  Sumanta Guha -->
+<html>
+<head>
+<title>LitCylinderWeberized</title>
+
+<style type="text/css">
+canvas { border: 1px solid black; } 
+</style>
+
+<script type="module">
+'use strict'
+
+// Imports.
+import * as vec3 from './JS/gl-matrix/vec3.js';
+import * as vec4 from './JS/gl-matrix/vec4.js';
+import * as mat3 from './JS/gl-matrix/mat3.js';
+import * as mat4 from './JS/gl-matrix/mat4.js';
+import {setShader} from './JS/prepShader.js';
+import {Vertex, flattenArrayOfVertices} from './JS/vertex.js';
+import {CYL_LONGS, CYL_LATS, fillCylinder} from "./JS/cylinder.js";
+import {Light} from './JS/light.js';
+import {Material} from './JS/material.js';
+
+// Constants mimicking enums for VAO ids ... 
+const CYLINDER = 0, 
+// ... and VBO ids.
+CYL_VERTICES = 0, CYL_INDICES = 1;
+     
+// Float size in bytes.
+const SIZEOF_FLOAT32 = Float32Array.BYTES_PER_ELEMENT;  
+
+// Begin globals.
+let Xangle = 150.0, Yangle = 60.0, Zangle = 0.0; // Angles to rotate the cylinder.
+
+// Light properties.
+const light0 = new Light(vec4.fromValues(0.0, 0.0, 0.0, 1.0),
+                         vec4.fromValues(1.0, 1.0, 1.0, 1.0),
+                         vec4.fromValues(1.0, 1.0, 1.0, 1.0),
+                         vec4.fromValues(0.0, 1.5, 3.0, 1.0));
+
+// Global ambient.
+const globAmb = vec4.fromValues(0.2, 0.2, 0.2, 1.0);
+
+// Front material properties.
+const cylFront = new Material(vec4.fromValues(0.9, 0.0, 0.0, 1.0),
+                              vec4.fromValues(0.9, 0.0, 0.0, 1.0),
+                              vec4.fromValues(1.0, 1.0, 1.0, 1.0),
+                              vec4.fromValues(0.0, 0.0, 0.0, 1.0),
+                              50.0);
+
+// Back material properties.                              
+const cylBack = new Material(vec4.fromValues(0.0, 0.9, 0.0, 1.0),
+                             vec4.fromValues(0.0, 0.9, 0.0, 1.0),
+                             vec4.fromValues(1.0, 1.0, 1.0, 1.0),
+                             vec4.fromValues(0.0, 0.0, 0.0, 1.0),
+                             50.0);
+
+// Cylinder data.
+let cylVertices = new Array((CYL_LONGS+1) * (CYL_LATS+1)),
+    cylIndices = new Uint16Array( CYL_LATS * 2 * (CYL_LONGS+1) ),
+    cylCounts = new Uint16Array(CYL_LATS),
+    cylOffsets = new Uint16Array(CYL_LATS);
+
+// Initialize the modelview, projection and normal matrices as identity matrices.
+let modelViewMat = mat4.create(), projMat = mat4.create();
+let normalMat = mat3.create();
+
+let canvas, 
+    gl, 
+    programObj,
+    vertexShaderObj,
+    fragmentShaderObj,
+    modelViewMatLoc,
+    normalMatLoc,
+    projMatLoc,
+    buffer = new Array(2),
+    vao = new Array(1);
+// End globals.
+
+// Routine to convert degrees to radians.
+function radians(degrees){return Math.PI/180.0 * degrees;}
+
+// Initialization routine.
+async function setup() 
+{
+   gl.clearColor(1.0, 1.0, 1.0, 0.0);
+   gl.enable(gl.DEPTH_TEST);
+
+   // Read shaders and create shader program executable.
+   vertexShaderObj = await setShader(gl, "vertex", "Shaders/vertexShader.glsl");
+   fragmentShaderObj = await setShader(gl, "fragment", "Shaders/fragmentShader.glsl");
+   programObj = gl.createProgram();
+   gl.attachShader(programObj, vertexShaderObj);
+   gl.attachShader(programObj, fragmentShaderObj);
+   gl.linkProgram(programObj);
+   gl.useProgram(programObj);
+
+   // Initialize cylinder.
+   fillCylinder(cylVertices, cylIndices, cylCounts, cylOffsets);
+
+   // Create a VAO and associate cylinder data with vertex shader.
+   vao[CYLINDER] = gl.createVertexArray();
+   gl.bindVertexArray(vao[CYLINDER]);
+   buffer[CYL_VERTICES] = gl.createBuffer();
+   gl.bindBuffer(gl.ARRAY_BUFFER, buffer[CYL_VERTICES]);
+   gl.bufferData(gl.ARRAY_BUFFER, flattenArrayOfVertices(cylVertices), gl.STATIC_DRAW, 0);
+   buffer[CYL_INDICES] = gl.createBuffer(); 
+   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer[CYL_INDICES]);
+   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, cylIndices, gl.STATIC_DRAW);
+   gl.vertexAttribPointer(0, 4, gl.FLOAT, false, SIZEOF_FLOAT32 * 7, 0);
+   gl.enableVertexAttribArray(0);
+   gl.vertexAttribPointer(1, 3, gl.FLOAT, false, SIZEOF_FLOAT32 * 7, SIZEOF_FLOAT32 * 4);
+   gl.enableVertexAttribArray(1);
+
+   // Obtain modelview matrix, projection matrix and normal matrix uniform locations.
+   modelViewMatLoc = gl.getUniformLocation(programObj, "modelViewMat");
+   projMatLoc = gl.getUniformLocation(programObj, "projMat");
+   normalMatLoc = gl.getUniformLocation(programObj, "normalMat");
+
+   // Obtain light property uniform locations and set values.
+   gl.uniform4fv(gl.getUniformLocation(programObj, "light0.ambCols"), light0.ambCols);
+   gl.uniform4fv(gl.getUniformLocation(programObj, "light0.difCols"), light0.difCols);
+   gl.uniform4fv(gl.getUniformLocation(programObj, "light0.specCols"), light0.specCols);
+   gl.uniform4fv(gl.getUniformLocation(programObj, "light0.coords"), light0.coords);
+
+   // Obtain global ambient uniform location and set value.
+   gl.uniform4fv(gl.getUniformLocation(programObj, "globAmb"), globAmb);
+
+   // Obtain front material property uniform locations and set values.
+   gl.uniform4fv(gl.getUniformLocation(programObj, "cylFront.ambRefl"), cylFront.ambRefl);
+   gl.uniform4fv(gl.getUniformLocation(programObj, "cylFront.difRefl"), cylFront.difRefl);
+   gl.uniform4fv(gl.getUniformLocation(programObj, "cylFront.specRefl"), cylFront.specRefl);
+   gl.uniform4fv(gl.getUniformLocation(programObj, "cylFront.emitCols"), cylFront.emitCols);
+   gl.uniform1f(gl.getUniformLocation(programObj, "cylFront.shininess"), cylFront.shininess);
+
+   // Obtain back material property uniform locations and set values.
+   gl.uniform4fv(gl.getUniformLocation(programObj, "cylBack.ambRefl"), cylBack.ambRefl);
+   gl.uniform4fv(gl.getUniformLocation(programObj, "cylBack.difRefl"), cylBack.difRefl);
+   gl.uniform4fv(gl.getUniformLocation(programObj, "cylBack.specRefl"), cylBack.specRefl);
+   gl.uniform4fv(gl.getUniformLocation(programObj, "cylBack.emitCols"), cylBack.emitCols);
+   gl.uniform1f(gl.getUniformLocation(programObj, "cylBack.shininess"), cylBack.shininess);
+}
+
+// Drawing routine.
+async function drawScene()
+{
+   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+   // Calculate and update projection matrix.
+   mat4.perspective(projMat, radians(60.0), gl.canvas.width/gl.canvas.height, 1.0, 50.0);
+   gl.uniformMatrix4fv(projMatLoc, false, projMat);
+
+   // Calculate and update modelview matrix.
+   mat4.identity(modelViewMat);
+   mat4.lookAt(modelViewMat, [0.0, 0.0, 3.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0] );
+   mat4.rotateZ(modelViewMat, modelViewMat, radians(Zangle));
+   mat4.rotateY(modelViewMat, modelViewMat, radians(Yangle));
+   mat4.rotateX(modelViewMat, modelViewMat, radians(Xangle));
+   gl.uniformMatrix4fv(modelViewMatLoc, false, modelViewMat);
+
+   // Calculate and update normal matrix.
+   mat3.transpose(normalMat, mat3.invert(normalMat, mat3.fromMat4(normalMat, modelViewMat)));
+   gl.uniformMatrix3fv(normalMatLoc, false, normalMat);
+
+   // Draw cylinder.
+   gl.bindVertexArray(vao[CYLINDER]);
+   for (let i = 0; i < CYL_LATS; i++)
+      gl.drawElements(gl.TRIANGLE_STRIP, cylCounts[i], gl.UNSIGNED_SHORT, cylOffsets[i]);
+}
+
+// Keyboard input processing routine.
+function keyInput(event)
+{
+   switch(event.key) 
+   {
+   case 'x': 
+      Xangle += 5.0; if (Xangle > 360.0) Xangle -= 360.0;
+      break;
+   case 'X':
+      Xangle -= 5.0; if (Xangle < 0.0) Xangle += 360.0;
+      break;
+   case 'y':
+      Yangle += 5.0; if (Yangle > 360.0) Yangle -= 360.0;
+      break;
+   case 'Y':
+      Yangle -= 5.0; if (Yangle < 0.0) Yangle += 360.0;
+      break;
+   case 'z':
+      Zangle += 5.0; if (Zangle > 360.0) Zangle -= 360.0;
+      break;
+   case 'Z':
+      Zangle -= 5.0; if (Zangle < 0.0) Zangle += 360.0;
+      break;
+   default: return;
+   }
+   drawScene();
+}
+
+// Pop-up alert describing interaction.
+function alertInteraction()
+{
+   let msg = `Interaction:
+              Press the x, X, y, Y, z, Z keys to turn the cylinder.`
+   alert(msg);
+}
+
+// Application entry routine.
+async function init()
+{
+   canvas = document.getElementById('WebGLcanvas');    
+   gl = canvas.getContext('webgl2'); 
+
+   alertInteraction();
+   document.addEventListener("keydown", function(event){event.preventDefault()});
+   document.addEventListener('keydown', keyInput);
+   await setup();
+   drawScene();   
+}
+
+window.onload = init;
+</script>
+</head>
+  
+<body>
+<canvas id="WebGLcanvas" width="500" height="500"></canvas>
+</body>
+</html>

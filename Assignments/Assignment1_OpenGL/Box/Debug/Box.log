@@ -1,0 +1,89 @@
+﻿  box.cpp
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(153,27): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(153,22): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(153,17): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(155,42): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(155,33): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(155,19): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(160,42): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(160,33): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(160,19): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(166,32): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(166,18): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(174,27): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(174,22): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(174,17): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(176,46): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(176,33): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(176,19): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(181,46): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(181,33): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(181,19): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(186,34): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(186,19): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(187,34): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(187,19): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(195,27): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(195,22): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(195,17): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(197,46): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(197,33): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(197,19): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(202,46): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(202,33): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(202,19): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(207,62): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(207,47): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(207,31): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(207,16): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(214,22): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(214,17): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(214,12): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(216,62): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(216,24): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(220,62): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(220,24): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(229,20): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(229,13): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(245,22): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(246,31): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(246,22): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(250,35): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(250,18): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(251,29): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(251,14): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(332,31): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(332,28): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(344,44): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(344,41): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(344,34): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(344,27): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(358,49): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(358,46): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(358,39): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(358,32): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(359,34): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(359,31): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(359,24): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(359,17): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(474,10): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(475,10): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(476,10): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(477,10): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(478,31): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(478,27): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(479,31): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(479,27): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(518,11): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(519,11): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(520,20): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(521,20): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(522,34): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(522,30): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(526,11): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(527,11): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(528,20): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(529,20): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(530,34): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\box.cpp(530,30): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  Box.vcxproj -> C:\Users\DELL\Desktop\OpenGL_CS440_CS2203101\Assignments\Assignment1_OpenGL\Debug\Box.exe

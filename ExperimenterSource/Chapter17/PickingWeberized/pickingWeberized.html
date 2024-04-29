@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<!-- pickingWeberized.html 
+     WebGL 2.0 version of picking.cpp, adapted from pickingShaderized.cpp.
+
+     Open the project in a server environment, e.g., Visual Studio Code with Live Server extension.
+
+     Interaction:
+     Click the left mouse button to select a triangle.
+	  
+     Sumanta Guha -->
+<html>
+<head>
+<title>PickingWeberized</title>
+
+<style type="text/css">
+canvas { border: 1px solid black } 
+</style>
+
+<script type="module">
+'use strict'
+
+// Imports.
+import * as vec4 from './JS/gl-matrix/mat4.js';
+import * as mat4 from './JS/gl-matrix/mat4.js';
+import {setShader} from './JS/prepShader.js';
+import {Vertex, flattenArrayOfVertices} from './JS/vertex.js';
+
+// Initial canvas size.
+const INITIAL_CANVAS_WIDTH = 500, INITIAL_CANVAS_HEIGHT = 500;
+
+// Constants mimicking enums for VAO ids ... 
+const TRIANGLE1 = 0, TRIANGLE2 = 1,  TRIANGLE3 = 2, NONE = 4,
+// ... and VBO ids.
+TRIANGLE1_VERTICES = 0, TRIANGLE2_VERTICES = 1, TRIANGLE3_VERTICES = 2;
+     
+// Float size in bytes.
+const SIZEOF_FLOAT32 = Float32Array.BYTES_PER_ELEMENT;  
+
+// Begin globals.
+let canvas, 
+    gl, 
+    modelViewMat = mat4.create(), 
+    projMat = mat4.create(),
+    programObj,
+    vertexShaderObj,
+    fragmentShaderObj,
+    modelViewMatLoc,
+    projMatLoc,
+    vao = new Array(3),
+    buffer = new Array(3),
+    texture, 
+    framebuffer, 
+    renderbuffer,
+    colorCodeLoc,
+    highlightColorLoc,
+    isSelectingLoc,
+    isHighlightLoc,
+    clickedObj,
+    canvasWidth = INITIAL_CANVAS_WIDTH, 
+    canvasHeight = INITIAL_CANVAS_HEIGHT;
+
+// Data for 3 triangles including vertex coordinate and color values, and color code.
+const triangle1Vertices = // Vertical triangle.
+[
+	new Vertex( vec4.fromValues(-3.0, -4.0, -5.3, 1.0), vec4.fromValues(1.0, 0.0, 0.0, 1.0) ),
+   new Vertex( vec4.fromValues(-1.0, -4.0, -5.3, 1.0), vec4.fromValues(0.0, 1.0, 0.0, 1.0) ),
+   new Vertex( vec4.fromValues(-3.0, 5.0, -5.3, 1.0),  vec4.fromValues(0.0, 0.0, 1.0, 1.0) )
+];
+const triangle1ColorCode = new Float32Array([1.0, 0.0, 0.0, 1.0]);
+
+const triangle2Vertices = // Angled triangle.
+[
+	new Vertex( vec4.fromValues(4.0, 4.0, -5.2, 1.0), vec4.fromValues(0.0, 0.0, 0.0, 1.0) ),
+   new Vertex( vec4.fromValues(2.0, 4.0, -5.2, 1.0), vec4.fromValues(1.0, 1.0, 1.0, 1.0) ),
+   new Vertex( vec4.fromValues(-5.0, -4.0, -5.2, 1.0),  vec4.fromValues(0.0, 1.0, 1.0, 1.0) )
+];
+const triangle2ColorCode = new Float32Array([0.0, 1.0, 0.0, 1.0]);
+
+const triangle3Vertices = // Horizontal triangle.
+[
+	new Vertex( vec4.fromValues(-4.0, 1.0, -5.1, 1.0), vec4.fromValues(0.0, 1.0, 1.0, 1.0) ),
+   new Vertex( vec4.fromValues(-4.0, -1.0, -5.1, 1.0), vec4.fromValues(1.0, 1.0, 0.0, 1.0) ),
+   new Vertex( vec4.fromValues(5.0, -1.0, -5.1, 1.0),  vec4.fromValues(1.0, 0.0, 1.0, 1.0) )
+];
+const triangle3ColorCode = new Float32Array([0.0, 0.0, 1.0, 1.0]);
+
+// Picked triangle highlight color.
+const highlightColor = new Float32Array([1.0, 1.0, 0.0, 1.0]);
+// End globals.
+
+// Initialization routine.
+async function setup() 
+{
+   gl.clearColor(1.0, 1.0, 1.0, 0.0);
+   gl.enable(gl.DEPTH_TEST);
+
+   // Read shaders and create shader program executable.
+   vertexShaderObj = await setShader(gl, "vertex", "Shaders/vertexShader.glsl");
+   fragmentShaderObj = await setShader(gl, "fragment", "Shaders/fragmentShader.glsl");
+   programObj = gl.createProgram();
+   gl.attachShader(programObj, vertexShaderObj);
+   gl.attachShader(programObj, fragmentShaderObj);
+   gl.linkProgram(programObj);
+   gl.useProgram(programObj);
+
+   // Create a VAO and associate TRIANGLE1 data with vertex shader.
+   vao[TRIANGLE1] = gl.createVertexArray();
+   gl.bindVertexArray(vao[TRIANGLE1]);
+   buffer[TRIANGLE1_VERTICES] = gl.createBuffer();
+   gl.bindBuffer(gl.ARRAY_BUFFER, buffer[TRIANGLE1_VERTICES]);
+   gl.bufferData(gl.ARRAY_BUFFER, flattenArrayOfVertices(triangle1Vertices), gl.STATIC_DRAW, 0);
+   gl.vertexAttribPointer(0, 4, gl.FLOAT, false, SIZEOF_FLOAT32 * 8, 0);
+   gl.enableVertexAttribArray(0);
+   gl.vertexAttribPointer(1, 4, gl.FLOAT, false, SIZEOF_FLOAT32 * 8, SIZEOF_FLOAT32 * 4);
+   gl.enableVertexAttribArray(1);
+
+   // Create a VAO and associate TRIANGLE2 data with vertex shader.
+   vao[TRIANGLE2] = gl.createVertexArray();
+   gl.bindVertexArray(vao[TRIANGLE2]);
+   buffer[TRIANGLE2_VERTICES] = gl.createBuffer();
+   gl.bindBuffer(gl.ARRAY_BUFFER, buffer[TRIANGLE2_VERTICES]);
+   gl.bufferData(gl.ARRAY_BUFFER, flattenArrayOfVertices(triangle2Vertices), gl.STATIC_DRAW, 0);
+   gl.vertexAttribPointer(0, 4, gl.FLOAT, false, SIZEOF_FLOAT32 * 8, 0);
+   gl.enableVertexAttribArray(0);
+   gl.vertexAttribPointer(1, 4, gl.FLOAT, false, SIZEOF_FLOAT32 * 8, SIZEOF_FLOAT32 * 4);
+   gl.enableVertexAttribArray(1);
+
+   // Create a VAO and associate TRIANGLE3 data with vertex shader.
+   vao[TRIANGLE3] = gl.createVertexArray();
+   gl.bindVertexArray(vao[TRIANGLE3]);
+   buffer[TRIANGLE3_VERTICES] = gl.createBuffer();
+   gl.bindBuffer(gl.ARRAY_BUFFER, buffer[TRIANGLE3_VERTICES]);
+   gl.bufferData(gl.ARRAY_BUFFER, flattenArrayOfVertices(triangle3Vertices), gl.STATIC_DRAW, 0);
+   gl.vertexAttribPointer(0, 4, gl.FLOAT, false, SIZEOF_FLOAT32 * 8, 0);
+   gl.enableVertexAttribArray(0);
+   gl.vertexAttribPointer(1, 4, gl.FLOAT, false, SIZEOF_FLOAT32 * 8, SIZEOF_FLOAT32 * 4);
+   gl.enableVertexAttribArray(1);
+
+   // Obtain modelview matrix uniform location and set value.
+   mat4.identity(modelViewMat);
+   modelViewMatLoc = gl.getUniformLocation(programObj, "modelViewMat");
+   gl.uniformMatrix4fv(modelViewMatLoc, false, modelViewMat);
+
+   // Obtain projection matrix uniform location and set value.
+   mat4.frustum(projMat, -5.0, 5.0, -5.0, 5.0, 5.0, 100.0);
+   projMatLoc = gl.getUniformLocation(programObj, "projMat");
+   gl.uniformMatrix4fv(projMatLoc, false, projMat);
+
+   // Create texture, renderbuffer and framebuffer obejects.
+   texture = gl.createTexture();
+   renderbuffer = gl.createRenderbuffer();
+   framebuffer = gl.createFramebuffer();
+
+   // Bind FBO framebuffer and attach to it a texture as color buffer and renderbuffer
+	// as depth buffer - see definition of fitSizedAttachmentsToFramebuffer() - of current
+	// window size, and then bind default framebuffer.
+   gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+   fitSizedAttachmentsToFramebuffer(canvasWidth, canvasHeight);
+   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+	// Obtain fragment shader colorCode, highlightColor, isSelecting and
+	// isHighlight uniform locations.
+   colorCodeLoc = gl.getUniformLocation(programObj, "colorCode");
+   highlightColorLoc = gl.getUniformLocation(programObj, "highlightColor");
+   isSelectingLoc = gl.getUniformLocation(programObj, "isSelecting");
+   isHighlightLoc = gl.getUniformLocation(programObj, "isHighlight");
+
+	// Set value of highlightColor uniform and initial values of  
+	// isSelecting and isHighlight uniforms.
+   gl.uniform4fv(highlightColorLoc, highlightColor);
+   gl.uniform1i(isSelectingLoc, 0);
+   gl.uniform1i(isHighlightLoc, 0);
+
+   // Initial object clicked none.
+   clickedObj = NONE;
+}
+
+// Routine to attach sized texture as color buffer and renderbuffer as depth buffer
+// to currently bound FBO.
+function fitSizedAttachmentsToFramebuffer(width, height)
+{
+   gl.bindTexture(gl.TEXTURE_2D, texture);
+   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+   gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+   gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
+   gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+   gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer);
+}
+
+// Drawing routine.
+async function drawScene()
+{
+   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+	// Transmit TRIANGLE1's color code to the fragment shader's colorCode uniform,
+	// set the uniform isHighlight if TRIANGLE1 has been picked so that TRIANGLE1
+	// will be highlighted in this case, and draw TRIANGLE1.
+   gl.uniform4fv(colorCodeLoc, triangle1ColorCode);
+   if (clickedObj == TRIANGLE1) gl.uniform1i(isHighlightLoc, 1); else gl.uniform1i(isHighlightLoc, 0);
+   gl.bindVertexArray(vao[TRIANGLE1]);
+   gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+	// Transmit TRIANGLE2's color code to the fragment shader's colorCode uniform,
+	// set the uniform isHighlight if TRIANGLE2 has been picked so that TRIANGLE2
+	// will be highlighted in this case, and draw TRIANGLE2.
+   gl.uniform4fv(colorCodeLoc, triangle2ColorCode);
+   if (clickedObj == TRIANGLE2) gl.uniform1i(isHighlightLoc, 1); else gl.uniform1i(isHighlightLoc, 0);
+   gl.bindVertexArray(vao[TRIANGLE2]);
+   gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+	// Transmit TRIANGLE3's color code to the fragment shader's colorCode uniform,
+	// set the uniform isHighlight if TRIANGLE3 has been picked so that TRIANGLE3
+	// will be highlighted in this case, and draw TRIANGLE3.
+   gl.uniform4fv(colorCodeLoc, triangle3ColorCode);
+   if (clickedObj == TRIANGLE3) gl.uniform1i(isHighlightLoc, 1); else gl.uniform1i(isHighlightLoc, 0);
+   gl.bindVertexArray(vao[TRIANGLE3]);
+   gl.drawArrays(gl.TRIANGLES, 0, 3);
+}
+
+// Mouse callback routine.
+function pickFunction(event){
+   const mouseX = event.offsetX, mouseY = event.offsetY;
+   const pixel = new Uint8Array(4);
+
+   if (event.button != 0) return;
+
+   // Set the fragment shader uniform isSelecting so that triangles are drawn
+	// color coded in the FBO framebuffer.
+   gl.uniform1i(isSelectingLoc, 1);
+   gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+   drawScene();
+
+	// Read the clicked pixel.
+   gl.readPixels(mouseX, canvasHeight - mouseY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);  
+   
+   // Set clickedObj by matching color of clicked pixel with object color codes.
+   if (pixel[0] == 255 && pixel[1] == 0 && pixel[2] == 0) clickedObj = TRIANGLE1;
+	if (pixel[0] == 0 && pixel[1] == 255 && pixel[2] == 0) clickedObj = TRIANGLE2;
+	if (pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 255) clickedObj = TRIANGLE3;
+	if (pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255) clickedObj = NONE;
+
+   // Reset the fragment shader uniform isSelecting, bind the default framebuffer and draw again.
+   gl.uniform1i(isSelectingLoc, 0);
+   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+   drawScene();
+}
+  
+// Pop-up alert describing interaction.
+function alertInteraction()
+{
+   let msg = `Interaction:
+              Click the left mouse button to select a triangle.`
+   alert(msg);
+}
+
+// Application entry routine.
+async function init()
+{
+   canvas = document.getElementById('WebGLcanvas'); 
+   canvas.width = INITIAL_CANVAS_WIDTH; canvas.height = INITIAL_CANVAS_HEIGHT;   
+   gl = canvas.getContext('webgl2'); 
+
+   alertInteraction();
+   canvas.addEventListener('click', pickFunction);
+   await setup();
+   drawScene();   
+}
+
+window.onload = init;
+</script>
+</head>
+  
+<body>
+<canvas id="WebGLcanvas"></canvas>
+</body>
+</html>

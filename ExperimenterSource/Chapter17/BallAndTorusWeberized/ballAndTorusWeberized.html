@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<!-- ballAndTorusWeberized.html 
+     WebGL 2.0 version of ballAndTorus.cpp, adapted from ballAndTorusShaderized.cpp.
+
+     Open the project in a server environment, e.g., Visual Studio Code with Live Server extension.
+     
+     Interaction:
+     Press space to toggle between animation on and off.
+     Press the up/down arrow keys to speed up/slow down animation.
+     Press the x, X, y, Y, z, Z keys to rotate the scene.
+	  
+     Sumanta Guha -->
+<html>
+<head>
+<title>BallAndTorusWeberized</title>
+
+<style type="text/css">
+canvas { border: 1px solid black; } 
+</style>
+
+<script type="module">
+'use strict'
+
+// Imports.
+import * as mat4 from './JS/gl-matrix/mat4.js';
+import {setShader} from './JS/prepShader.js';
+import {Vertex, flattenArrayOfVertices} from './JS/vertex.js';
+import {SPH_RADIUS, SPH_LONGS, SPH_LATS, SPH_COLORS, fillSphere} from './JS/sphere.js';
+import {TOR_OUTRAD, TOR_INRAD, TOR_LONGS, TOR_LATS, TOR_COLORS, fillTorus} from './JS/torus.js';
+
+// Constants mimicking enums for VAO ids ... 
+const SPHERE = 0, TORUS = 1, 
+// ... and VBO ids.
+SPH_VERTICES = 0, SPH_INDICES = 1, TOR_VERTICES = 2, TOR_INDICES = 3;
+
+// Float size in bytes.
+const SIZEOF_FLOAT32 = Float32Array.BYTES_PER_ELEMENT;  
+
+// Begin globals.
+let latAngle = 0.0, // Latitudinal angle.
+    longAngle = 0.0, // Longitudinal angle.
+    Xangle = 0.0, Yangle = 0.0, Zangle = 0.0, // Angles to rotate scene.
+    isAnimate = 0, // Animated?
+    animationPeriod = 100; // Time interval between frames.
+
+// Sphere data.
+let sphVertices = new Array((SPH_LONGS+1) * (SPH_LATS+1)),
+    sphIndices = new Uint16Array(SPH_LATS * 2 * (SPH_LONGS+1)),
+    sphCounts = new Uint16Array(SPH_LATS),
+    sphOffsets = new Uint16Array(SPH_LATS),
+    sphColors = new Float32Array(4);
+
+// Torus data.
+let torVertices = new Array((TOR_LONGS+1) * (TOR_LATS+1)),
+    torIndices = new Uint16Array(TOR_LATS * 2 * (TOR_LONGS+1)), 
+    torCounts = new Uint16Array(TOR_LATS),
+    torOffsets = new Uint16Array(TOR_LATS),
+    torColors = new Float32Array(4);
+
+// Initialize the modelview and projection matrices as identity matrices.
+let modelViewMat = mat4.create(), projMat = mat4.create();
+
+let canvas, 
+    gl, 
+    programObj,
+    vertexShaderObj,
+    fragmentShaderObj,
+    modelViewMatLoc,
+    projMatLoc,
+    colorLoc,
+    buffer = new Array(4),
+    vao = new Array(2);
+// End globals.
+
+// Routine to convert degrees to radians.
+function radians(degrees){return Math.PI/180.0 * degrees;}
+
+// Initialization routine.
+async function setup() 
+{
+   gl.clearColor(1.0, 1.0, 1.0, 0.0);
+   gl.enable(gl.DEPTH_TEST);
+
+   // Read shaders and create shader program executable.
+   vertexShaderObj = await setShader(gl, "vertex", "Shaders/vertexShader.glsl");
+   fragmentShaderObj = await setShader(gl, "fragment", "Shaders/fragmentShader.glsl");
+   programObj = gl.createProgram();
+   gl.attachShader(programObj, vertexShaderObj);
+   gl.attachShader(programObj, fragmentShaderObj);
+   gl.linkProgram(programObj);
+   gl.useProgram(programObj);
+
+   // Initialize shpere and torus.
+   fillSphere(sphVertices, sphIndices, sphCounts, sphOffsets, sphColors);
+   fillTorus(torVertices, torIndices, torCounts, torOffsets, torColors);
+
+   // Create a VAO and associate sphere data with vertex shader.
+   vao[SPHERE] = gl.createVertexArray();
+   gl.bindVertexArray(vao[SPHERE]);
+   buffer[SPH_VERTICES] = gl.createBuffer();
+   gl.bindBuffer(gl.ARRAY_BUFFER, buffer[SPH_VERTICES]);
+   gl.bufferData(gl.ARRAY_BUFFER, flattenArrayOfVertices(sphVertices), gl.STATIC_DRAW, 0);
+   buffer[SPH_INDICES] = gl.createBuffer(); 
+   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer[SPH_INDICES]);
+   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, sphIndices, gl.STATIC_DRAW);
+   gl.vertexAttribPointer(0, 4, gl.FLOAT, false, SIZEOF_FLOAT32 * 4, 0);
+   gl.enableVertexAttribArray(0);
+
+   // Create a VAO and associate torus data with vertex shader.
+   vao[TORUS] = gl.createVertexArray(); 
+   gl.bindVertexArray(vao[TORUS]);
+   buffer[TOR_VERTICES] = gl.createBuffer();
+   gl.bindBuffer(gl.ARRAY_BUFFER, buffer[TOR_VERTICES]);
+   gl.bufferData(gl.ARRAY_BUFFER, flattenArrayOfVertices(torVertices), gl.STATIC_DRAW, 0);
+   buffer[TOR_INDICES] = gl.createBuffer(); 
+   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer[TOR_INDICES]);
+   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, torIndices, gl.STATIC_DRAW);
+   gl.vertexAttribPointer(0, 4, gl.FLOAT, false, SIZEOF_FLOAT32 * 4, 0);
+   gl.enableVertexAttribArray(0);
+
+   // Obtain projection matrix uniform location and set value.
+   projMatLoc = gl.getUniformLocation(programObj, "projMat");
+   mat4.frustum(projMat, -5.0, 5.0, -5.0, 5.0, 5.0, 100.0);
+   gl.uniformMatrix4fv(projMatLoc, false, projMat);
+
+   // Obtain modelview matrix uniform and color uniform locations.
+   modelViewMatLoc = gl.getUniformLocation(programObj, "modelViewMat");
+   colorLoc = gl.getUniformLocation(programObj, "colors");
+}
+
+// Drawing routine.
+async function drawScene()
+{
+   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+   // Calculate modelview matrix.
+   mat4.identity(modelViewMat);
+   mat4.translate(modelViewMat, modelViewMat, [0.0, 0.0, -25.0]);
+   mat4.rotateZ(modelViewMat, modelViewMat, radians(Zangle));
+   mat4.rotateY(modelViewMat, modelViewMat, radians(Yangle));
+   mat4.rotateX(modelViewMat, modelViewMat, radians(Xangle));
+
+   // Draw torus after updating color and modelview matrix values.
+   gl.uniform4fv(colorLoc, torColors);
+   gl.uniformMatrix4fv(modelViewMatLoc, false, modelViewMat);
+   gl.bindVertexArray(vao[TORUS]);
+   for (let i = 0; i < TOR_LATS; i++)
+      gl.drawElements(gl.LINE_STRIP, torCounts[i], gl.UNSIGNED_SHORT, torOffsets[i]);
+
+   // Calculate modelview matrix.
+   mat4.rotateZ(modelViewMat, modelViewMat, radians(longAngle));
+   mat4.translate(modelViewMat, modelViewMat, [12.0, 0.0, 0.0]);
+   mat4.rotateY(modelViewMat, modelViewMat, radians(latAngle));
+   mat4.translate(modelViewMat, modelViewMat, [-12.0, 0.0, 0.0]);
+   mat4.translate(modelViewMat, modelViewMat, [20.0, 0.0, 0.0]);
+
+   // Draw ball after updating color and modelview matrix values.
+   gl.uniform4fv(colorLoc, sphColors);
+   gl.uniformMatrix4fv(modelViewMatLoc, false, modelViewMat);
+   gl.bindVertexArray(vao[SPHERE]);
+   for (let i = 0; i < SPH_LATS; i++)
+      gl.drawElements(gl.LINE_STRIP, sphCounts[i], gl.UNSIGNED_SHORT, sphOffsets[i]);
+}
+
+// Timer function.
+function animate()
+{
+   let timerId = setTimeout(
+   function animationCycle()
+   {
+      if (isAnimate)
+      { 
+         drawScene();
+         latAngle += 5.0; if (latAngle > 360.0) latAngle -= 360.0;
+         longAngle += 1.0; if (longAngle > 360.0) longAngle -= 360.0;
+      }
+      timerId = setTimeout(animationCycle, animationPeriod);
+   });
+}
+
+// Keyboard input processing routine.
+function keyInput(event)
+{
+   switch(event.key) 
+   {
+   case 'x': 
+      Xangle += 5.0; if (Xangle > 360.0) Xangle -= 360.0;
+      break;
+   case 'X':
+      Xangle -= 5.0; if (Xangle < 0.0) Xangle += 360.0;
+      break;
+   case 'y':
+      Yangle += 5.0; if (Yangle > 360.0) Yangle -= 360.0;
+      break;
+   case 'Y':
+      Yangle -= 5.0; if (Yangle < 0.0) Yangle += 360.0;
+      break;
+   case 'z':
+      Zangle += 5.0; if (Zangle > 360.0) Zangle -= 360.0;
+      break;
+   case 'Z':
+      Zangle -= 5.0; if (Zangle < 0.0) Zangle += 360.0;
+      break;
+   case ' ':
+      if (isAnimate) isAnimate = 0; else isAnimate = 1; 
+      break;
+   case 'ArrowDown':
+      animationPeriod += 5;
+      break;
+   case 'ArrowUp':
+      if (animationPeriod > 5) animationPeriod -= 5;
+      break;
+   default: return;
+   }
+   drawScene();
+}
+
+// Pop-up alert describing interaction.
+function alertInteraction()
+{
+   let msg = `Interaction:
+              Press space to toggle between animation on and off.
+              Press up/down arrow keys to speed up/slow down animation.
+              Press the x, X, y, Y, z, Z keys to rotate the scene.`
+   alert(msg);
+}
+
+// Application entry routine.
+async function init()
+{
+   canvas = document.getElementById('WebGLcanvas');    
+   gl = canvas.getContext('webgl2'); 
+
+   alertInteraction();
+   document.addEventListener('keydown', function(event){event.preventDefault()});
+   document.addEventListener('keydown', keyInput);
+   await setup();
+   drawScene();   
+   animate();
+}
+
+window.onload = init;
+</script>
+</head>
+  
+<body>
+<canvas id="WebGLcanvas" width="500" height="500"></canvas>
+</body>
+</html>

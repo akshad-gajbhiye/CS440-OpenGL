@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<!-- OBJmodelsWeberized.html 
+     WebGL 2.0 version of OBJmodels.cpp, adapted from OBJmodelsShaderized.cpp.
+
+     Open the project in a server environment, e.g., Visual Studio Code with Live Server extension.
+	   
+     Sumanta Guha -->
+<html>
+<head>
+<title>OBJModelsWeberized</title>
+
+<style type="text/css">
+canvas { border: 1px solid black; } 
+</style>
+
+<script type="module">
+'use strict'
+
+// Imports.
+import * as mat4 from './JS/gl-matrix/mat4.js';
+import {setShader} from './JS/prepShader.js';
+import {Vertex, flattenVertex, flattenArrayOfVertices} from './JS/vertex.js';
+import {MAX_NO_VERTICES, MAX_NO_FACES, MAX_NO_FACE_VERTICES, loadOBJ} from './JS/loadOBJ.js';
+
+// Constants mimicking enums for VAO ids ... 
+const HIPPO = 0, CAMEL = 1,
+// ... and VBO ids.
+HIPPO_VERTICES = 0, HIPPO_INDICES = 1, CAMEL_VERTICES = 2, CAMEL_INDICES = 3;
+    
+// Float size in bytes.
+const SIZEOF_FLOAT32 = Float32Array.BYTES_PER_ELEMENT;  
+
+// Begin globals.
+// Hippo mesh data variables.
+let hippoVertices = new Array(MAX_NO_VERTICES),
+    hippoIndices = new Uint16Array(MAX_NO_FACES * MAX_NO_FACE_VERTICES),
+    hippoCountIndices = new Uint16Array(MAX_NO_FACES),
+    hippoCountFaces = new Uint16Array(1),
+    hippoOffsets = new Uint16Array(MAX_NO_FACES),
+    hippoBoxCenter = new Float32Array(3);
+
+// Camel mesh data variables.
+let camelVertices = new Array(MAX_NO_VERTICES),
+    camelIndices = new Uint16Array(MAX_NO_FACES * MAX_NO_FACE_VERTICES),
+    camelCountIndices = new Uint16Array(MAX_NO_FACES),
+    camelCountFaces = new Uint16Array(1),
+    camelOffsets = new Uint16Array(MAX_NO_FACES),
+    camelBoxCenter = new Float32Array(3);
+
+let blackColor = new Float32Array([0.0, 0.0, 0.0, 1.0]);
+let modelViewMat = mat4.create(), projMat = mat4.create();
+
+let canvas, 
+    gl, 
+    programObj,
+    vertexShaderObj,
+    fragmentShaderObj,
+    modelViewMatLoc,
+    projMatLoc,
+    colorLoc,
+    vao = new Array(2),
+    buffer = new Array(4);
+// End globals.
+
+// Routine to convert degrees to radians.
+function radians(degrees){return Math.PI/180.0 * degrees;}
+
+// Initialization routine.
+async function setup() 
+{
+   gl.clearColor(1.0, 1.0, 1.0, 0.0);
+   gl.enable(gl.DEPTH_TEST);
+
+   // Read shaders and create shader program executable.
+   vertexShaderObj = await setShader(gl, "vertex", "Shaders/vertexShader.glsl");
+   fragmentShaderObj = await setShader(gl, "fragment", "Shaders/fragmentShader.glsl");
+   programObj = gl.createProgram();
+   gl.attachShader(programObj, vertexShaderObj);
+   gl.attachShader(programObj, fragmentShaderObj);
+   gl.linkProgram(programObj);
+   gl.useProgram(programObj);
+
+   // Load hippo mesh data.
+   await loadOBJ("Meshes/hippo.obj", 
+            hippoVertices, 
+            hippoIndices, 
+            hippoCountIndices, 
+            hippoCountFaces, 
+            hippoOffsets, 
+            hippoBoxCenter);
+   
+   // Load camel mesh data.
+   await loadOBJ("Meshes/camel.obj", 
+            camelVertices, 
+            camelIndices, 
+            camelCountIndices, 
+            camelCountFaces, 
+            camelOffsets, 
+            camelBoxCenter);
+
+   // Create a VAO and associate hippo data with vertex shader.
+   vao[HIPPO] = gl.createVertexArray();
+   gl.bindVertexArray(vao[HIPPO]);
+   buffer[HIPPO_VERTICES] = gl.createBuffer();
+   gl.bindBuffer(gl.ARRAY_BUFFER, buffer[HIPPO_VERTICES]);
+   gl.bufferData(gl.ARRAY_BUFFER, flattenArrayOfVertices(hippoVertices), gl.STATIC_DRAW, 0);
+   buffer[HIPPO_INDICES] = gl.createBuffer(); 
+   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer[HIPPO_INDICES]);
+   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, hippoIndices, gl.STATIC_DRAW);
+   gl.vertexAttribPointer(0, 4, gl.FLOAT, false, SIZEOF_FLOAT32 * 4, 0);
+   gl.enableVertexAttribArray(0);
+
+   // Create a VAO and associate camel data with vertex shader.
+   vao[CAMEL] = gl.createVertexArray();
+   gl.bindVertexArray(vao[CAMEL]);
+   buffer[CAMEL_VERTICES] = gl.createBuffer();
+   gl.bindBuffer(gl.ARRAY_BUFFER, buffer[CAMEL_VERTICES]);
+   gl.bufferData(gl.ARRAY_BUFFER, flattenArrayOfVertices(camelVertices), gl.STATIC_DRAW, 0);
+   buffer[CAMEL_INDICES] = gl.createBuffer(); 
+   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer[CAMEL_INDICES]);
+   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, camelIndices, gl.STATIC_DRAW);
+   gl.vertexAttribPointer(0, 4, gl.FLOAT, false, SIZEOF_FLOAT32 * 4, 0);
+   gl.enableVertexAttribArray(0);
+
+   // Obtain color uniform location and set value.
+   colorLoc = gl.getUniformLocation(programObj, "colors");
+   gl.uniform4fv(colorLoc, blackColor);
+
+   // Obtain modelview matrix uniform and projection matrix uniform locations.
+   modelViewMatLoc = gl.getUniformLocation(programObj, "modelViewMat");
+   projMatLoc = gl.getUniformLocation(programObj, "projMat");
+}
+
+// Drawing routine.
+async function drawScene()
+{
+   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+   // Set the projection matrix.
+   mat4.perspective(projMat, radians(60.0), gl.canvas.width/gl.canvas.height, 300.0, 500.0);
+   gl.uniformMatrix4fv(projMatLoc, false, projMat);
+
+   // Transformations to pose hippo.
+   mat4.identity(modelViewMat);
+   mat4.lookAt(modelViewMat, [0.0, 0.0, 370.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0] );
+   mat4.translate(modelViewMat, modelViewMat, [-100.0, -40.0, 0.0]);
+   mat4.rotateY(modelViewMat, modelViewMat, radians(110.0));
+   mat4.rotateX(modelViewMat, modelViewMat, radians(275.0));
+
+   // Center hippo.
+   mat4.translate(modelViewMat, modelViewMat, [-hippoBoxCenter[0], -hippoBoxCenter[1], -hippoBoxCenter[2]]);
+
+   // Draw hippo.
+   gl.uniformMatrix4fv(modelViewMatLoc, false, modelViewMat);
+   gl.bindVertexArray(vao[HIPPO]);
+   for (let i = 0; i < hippoCountFaces[0]; i++)
+     gl.drawElements(gl.LINE_LOOP, hippoCountIndices[i], gl.UNSIGNED_SHORT, hippoOffsets[i]);
+
+   // Transformations to pose camel.
+   mat4.identity(modelViewMat);
+   mat4.lookAt(modelViewMat, [0.0, 0.0, 370.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0] );
+   mat4.translate(modelViewMat, modelViewMat, [120.0, 0.0, 0.0]);
+   mat4.rotateY(modelViewMat, modelViewMat, radians(185.0));
+   mat4.rotateX(modelViewMat, modelViewMat, radians(265.0));
+
+   // Center camel.
+   mat4.translate(modelViewMat, modelViewMat, [-camelBoxCenter[0], -camelBoxCenter[1], -camelBoxCenter[2]]);
+
+   // Draw camel.
+   gl.uniformMatrix4fv(modelViewMatLoc, false, modelViewMat);
+   gl.bindVertexArray(vao[CAMEL]);
+   for (let i = 0; i < camelCountFaces[0]; i++)
+     gl.drawElements(gl.LINE_LOOP, camelCountIndices[i], gl.UNSIGNED_SHORT, camelOffsets[i]);
+}
+
+// Application entry routine.
+async function init()
+{
+   canvas = document.getElementById('WebGLcanvas');    
+   gl = canvas.getContext('webgl2'); 
+
+   await setup();
+   drawScene();   
+}
+
+window.onload = init;
+</script>
+</head>
+  
+<body>
+<canvas id="WebGLcanvas" width="500" height="500"></canvas>
+</body>
+</html>

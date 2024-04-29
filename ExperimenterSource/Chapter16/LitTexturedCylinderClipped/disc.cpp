@@ -1,0 +1,30 @@
+#define _USE_MATH_DEFINES 
+
+#include <cmath>
+#include <iostream>
+
+#include <GL/glew.h>
+#include <GL/freeglut.h> 
+
+#include "disc.h"
+
+// Fill the vertex array with co-ordinates of the sample points.
+void fillDiscVertexArray(Vertex discVertices[DISC_SEGS])
+{
+   int k;
+
+   for (k = 0; k < DISC_SEGS; k++)
+   {
+      discVertices[k].coords.x = cos( (-1 + 2*(float)k/DISC_SEGS) * M_PI );
+      discVertices[k].coords.y = sin( (-1 + 2*(float)k/DISC_SEGS) * M_PI );
+      discVertices[k].coords.z = 1.0;
+      discVertices[k].coords.w = 1.0;
+      discVertices[k].normal.x = 0.0;
+      discVertices[k].normal.y = 0.0;
+      discVertices[k].normal.z = 1.0;
+	  discVertices[k].texCoords.s = 0.5 + 0.5*cos( (-1 + 2*(float)k/DISC_SEGS) * M_PI );
+	  discVertices[k].texCoords.t = 0.5 + 0.5*sin( (-1 + 2*(float)k/DISC_SEGS) * M_PI );
+   }
+}
+
+
